@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     
+  <meta charset="UTF-8">
+     
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Calculator</title>
+  <link rel="stylesheet" href="./advanced.css">
+
+</head>
+
+<body>
+
+  <!DOCTYPE html>
+  <html>
+
+  <head>
+    <title>Advanced Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Loading Screen 
+
+    <link rel="stylesheet" href="https://cdn.tailwindcss.com">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/postcss@^8/dist/postcss.min.js"></script>
+    -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.4.0/math.min.js"></script>
+  </head>
+
+  <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+      <canvas id="canvas"></canvas>
+
+      <h1>SMART CALCULATOR</h1>
+
+      <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+      </div>
+    </div>
+    </div>
+
+    <div class="calculator">
+      <input type="text" id="display" disabled>
+      <p id="result-length"></p>
+      <div class="buttons">
+        <button class="operator">AC</button>
+        <button class="operator">DEL</button>
+        <button class="operator">%</button>
+        <button class="operator">/</button>
+        <button class="number">7</button>
+        <button class="number">8</button>
+        <button class="number">9</button>
+        <button class="operator">*</button>
+        <button class="number">4</button>
+        <button class="number">5</button>
+        <button class="number">6</button>
+        <button class="operator">-</button>
+        <button class="number">1</button>
+        <button class="number">2</button>
+        <button class="number">3</button>
+        <button class="operator">+</button>
+        <button class="number">0</button>
+        <button class="number">.</button>
+        <button class="equal">=</button>
+        <button class="function">sin</button>
+        <button class="function">cos</button>
+        <button class="function">tan</button>
+        <button class="mode">deg</button>
+        <button class="mode">rad</button>
+        <button>(</button>
+        <button>)</button>
+        <button class="mode" id="startButton">speech recognition</button>
+        <button class="mode" id="output">output</button>
+        <!-- Loading Screen 
+             We've defined a memory variable to store the value.
+The MC button clears the memory.
+The MR button recalls the memory value and displays it in the result field.
+The MS button stores the current value in the memory.
+The M+ and M- buttons add or subtract the current value from the memory, respectively.
+             -->
+
+        <button id="mc">MC</button>
+        <button id="mr">MR</button>
+        <button id="ms">MS</button>
+        <button id="m+">M+</button>
+        <button id="m-">M-</button>
+
+        <button id="dark-mode">🌙</button>
+        <span>
+          <select id="from-unit">
+            <option value="meter">Meter</option>
+            <option value="kilometer">Kilometer</option>
+            <option value="centimeter">Centimeter</option>
+            <option value="millimeter">Millimeter</option>
+            <option value="inch">Inch</option>
+            <option value="foot">Foot</option>
+            <option value="yard">Yard</option>
+            <option value="mile">Mile</option>
+          </select>
+        </span>
+        <span>
+          <select id="to-unit">
+            <option value="meter">Meter</option>
+            <option value="kilometer">Kilometer</option>
+            <option value="centimeter">Centimeter</option>
+            <option value="millimeter">Millimeter</option>
+            <option value="inch">Inch</option>
+            <option value="foot">Foot</option>
+            <option value="yard">Yard</option>
+            <option value="mile">Mile</option>
+          </select>
+        </span>
+        <button onclick="convertLength()">Convert</button>
+
+      </div>
+
+      <!--Second section-->
+
+      <!--Second section
+    <div class="converter">
+      <h2>Currency Converter</h2>  
+
+      <input type="number" id="amount" placeholder="Enter Amount">
+      <select id="fromCurrency">
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>  
+
+      </select>
+      <select id="toCurrency">
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+      </select>
+      <button onclick="convertCurrency()">Convert</button>
+      <p id="result"></p>
+    </div>
+    -->
+    </div>
+
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+      const particles = [];
+
+      function Particle(x, y, dx, dy, radius, color) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
+        this.radius = radius;
+        this.color = color;
+        this.draw = function() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+        this.update = function() {
+          if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+            this.dx = -this.dx;
+          }
+          if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+            this.dy = -this.dy;
+          }
+          this.x += this.dx;
+          this.y += this.dy;
+          this.draw();
+        }
+      }
+
+      function init() {
+        for (let i = 0; i < 100; i++) {
+          let radius = Math.random() * 3 + 1;
+          let x = Math.random() * (innerWidth - radius * 2) + radius;
+          let y = Math.random() * (innerHeight - radius * 2) + radius;
+          let dx = (Math.random() - 0.5) * 2;
+          let dy = (Math.random() - 0.5) * 2;
+          let color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.8)`;
+          particles.push(new Particle(x, y, dx, dy, radius, color));
+        }
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+        }
+      }
+      init();
+      animate();
+      window.addEventListener("load", () => {
+        const progress = document.getElementById("progress");
+        const loadingScreen = document.getElementById("loading-screen");
+        const calculator = document.querySelector(".calculator");
+        let progressValue = 0;
+        const loadingInterval = setInterval(() => {
+          progressValue += 10;
+          progress.style.width = '100%';
+          if (progressValue >= 100) {
+            clearInterval(loadingInterval);
+            // Hide the loading screen and show the calculator
+            loadingScreen.style.opacity = "0";
+            setTimeout(() => {
+              loadingScreen.style.display = "none";
+              calculator.style.display = "block";
+            }, 500); // Add a fade-out effect
+          }
+        }, 300); // Adjust speed of loading animation
+      });
+      /*
+      import tailwindConfig from './tailwind.config.js'; // Path to your Tailwind config
+      tailwindConfig.plugins = []; // Empty the plugins array (might be needed for CDN)
+      windicss(tailwindConfig).process('./index.html').then(() => {
+        // Code to inject the processed CSS into the page (optional)
+      });*/
+      const display = document.getElementById('display');
+      const buttons = document.querySelectorAll('button');
+      let currentInput = '';
+      let mode = 'deg'; // Default mode is degrees
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          const value = button.textContent;
+          if (value === 'AC') {
+            currentInput = '';
+            display.value = '';
+          } else if (value === 'DEL') {
+            currentInput = currentInput.slice(0, -1);
+            display.value = currentInput;
+          } else if (value === '=') {
+            try {
+              const result = math.evaluate(currentInput);
+              currentInput = result.toString();
+              display.value = result;
+            } catch (error) {
+              display.value = 'Error';
+            }
+          } else if (value === 'speech recognition') {
+            {
+              display.value = '';
+            }
+          } else if (value === 'output') {
+            {
+              display.value = '';
+            }
+          } else if (value === 'Convert') {
+            {
+              display.value = '';
+            }
+          } else if (value === 'MS') {
+            {
+              display.value = '';
+            }
+          } else if (value === 'MR') {
+            {
+              display.value = '';
+            }
+          } else if (value === 'MC') {
+            {
+              display.value = '';
+            }
+          } else if (value === '🌙') {
+            {
+              display.value = '';
+            }
+          } else if (['+', '-', '*', '/', '%'].includes(value)) {
+            currentInput += value;
+            display.value = currentInput;
+          } else if (['sin', 'cos', 'tan'].includes(value)) {
+            const angle = parseFloat(currentInput);
+            let result;
+            if (mode === 'deg') {
+              result = math[value](angle * math.pi / 180);
+            } else {
+              result = math[value](angle);
+            }
+            currentInput = result.toString();
+            display.value = result;
+          } else if (value === 'deg' || value === 'rad') {
+            mode = value;
+            // You might want to update the display or a mode indicator to show the current mode
+          } else {
+            currentInput += value;
+            display.value = currentInput;
+          }
+        });
+      });
+      // Check if the browser supports the SpeechRecognition API
+      window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (window.SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US'; // Set the language
+        recognition.interimResults = false; // Only final results
+        // Start recognition on a button click
+        document.getElementById("startButton").addEventListener("click", () => {
+          recognition.start();
+        });
+        // Handle the result event
+        recognition.addEventListener("result", (event) => {
+          const transcript = event.results[0][0].transcript;
+          console.log("Recognized text:", transcript);
+          document.getElementById("output").textContent = transcript; // Display the result
+        });
+        recognition.addEventListener("end", () => recognition.stop());
+        // Handle errors
+        recognition.addEventListener("error", (event) => {
+          console.error("Recognition error:", event.error);
+        });
+      } else {
+        console.log("Speech recognition not supported in this browser.");
+      }
+      /*
+      const themeToggle = document.getElementById('theme-toggle');
+
+      themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-theme');
+      });
+      */
+      const themeToggle = document.getElementById('theme-toggle');
+      const body = document.body;
+      // Check for user's preferred theme in local storage
+      const currentTheme = localStorage.getItem('theme');
+      if (currentTheme) {
+        body.classList.add(currentTheme);
+      }
+      // on click get and apply the body dark theme class list
+      themeToggle.addEventListener('click', () => {
+        body.classList.toggle('dark-theme');
+        // Store the user's preferred theme in local storage
+        const isDarkTheme = body.classList.contains('dark-theme');
+        localStorage.setItem('theme', isDarkTheme ? 'dark-theme' : 'light-theme');
+      });
+      const result = document.getElementById('display');
+      let memory = 0;
+      document.getElementById('mc').addEventListener('click', () => {
+        memory = 0;
+        display.value = '';
+      });
+      document.getElementById('mr').addEventListener('click', () => {
+        display.value = memory;
+      });
+      document.getElementById('ms').addEventListener('click', () => {
+        memory = parseFloat(display.value);
+      });
+      document.getElementById('m+').addEventListener('click', () => {
+        memory += parseFloat(display.value);
+      });
+      document.getElementById('m-').addEventListener('click', () => {
+        memory -= parseFloat(display.value);
+      });
+      //another sample for MR MC functions 
+      // ... existing JavaScript logic ...
+      // Function to evaluate expressions with parentheses
+      function evaluateExpression(expr) {
+        // Use a library like eval or a custom parser for complex expressions
+        // For simpler expressions, you can use a basic approach:
+        // 1. Find the innermost pair of parentheses.
+        // 2. Evaluate the expression within the parentheses.
+        // 3. Replace the parentheses and the expression with the result.
+        // 4. Repeat until there are no more parentheses.
+        // Example using a simple approach:
+        while (expr.indexOf('(') !== -1) {
+          let innerExpr = '';
+          let parenthesesLevel = 0;
+          for (let i = 0; i < expr.length; i++) {
+            if (expr[i] === '(') {
+              parenthesesLevel++;
+              if (parenthesesLevel === 1) {
+                innerExpr += expr[i];
+              }
+            } else if (expr[i] === ')') {
+              parenthesesLevel--;
+              if (parenthesesLevel === 0) {
+                innerExpr += expr[i];
+                break;
+              }
+              innerExpr += expr[i];
+            } else if (parenthesesLevel > 0) {
+              innerExpr += expr[i];
+            }
+          }
+          const innerResult = eval(innerExpr.slice(1, -1));
+          expr = expr.replace(innerExpr, innerResult);
+        }
+        return eval(expr);
+      }
+      // Button click handler for parentheses
+      document.querySelector('button[data-value="("]').addEventListener('click', () => {
+        result.value += '(';
+      });
+      document.querySelector('button[data-value=")"]').addEventListener('click', () => {
+        result.value += ')';
+      });
+      // ... other button click handlers ...
+      const darkModeBtn = document.getElementById('dark-mode');
+      darkModeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+      });
+      // Calculator functionality (similar to the previous response)
+      // Unit converter functionality
+      function convertLength() {
+        const inputValue = parseFloat(document.getElementById('display').value);
+        const fromUnit = document.getElementById('from-unit').value;
+        const toUnit = document.getElementById('to-unit').value;
+        // Conversion factors
+        const conversionFactors = {
+          meter: 1,
+          kilometer: 1000,
+          centimeter: 0.01,
+          millimeter: 0.001,
+          inch: 0.0254,
+          foot: 0.3048,
+          yard: 0.9144,
+          mile: 1609.34
+        };
+        const result = inputValue * conversionFactors[fromUnit] / conversionFactors[toUnit];
+        document.getElementById('result-length').textContent =
+          `${inputValue} ${fromUnit} is equal to ${result.toFixed(2)} ${toUnit}`;
+      }
+      /*
+        API Key: You'll need to sign up for a Fixer API account to obtain an API key. Replace 'https://api.fixer.io/latest' with the actual API endpoint and include your API key in the request headers if required.
+Error Handling: Implement error handling to gracefully handle cases where the API request fails or invalid input is provided.
+User Experience: Consider adding features like a loading indicator while the API request is in progress, and clear error messages.
+Currency Pair Support: Expand the currency options in the select elements to include more currencies.
+*/
+      function convertCurrency() {
+        const amount = parseFloat(document.getElementById("amount").value);
+        const fromCurrency = document.getElementById("fromCurrency").value;
+        const toCurrency = document.getElementById("toCurrency").value;
+        // Fetch exchange rates from an API (e.g., Fixer API)
+        fetch('https://api.fixer.io/latest')
+          .then(response => response.json())
+          .then(data => {
+            const rates = data.rates;
+            const fromRate = rates[fromCurrency];
+            const toRate = rates[toCurrency];
+            const convertedAmount = (amount / fromRate) * toRate;
+            document.getElementById("result").textContent =
+              `${amount} ${fromCurrency} = ${convertedAmount.toFixed(2)} ${toCurrency}`;
+          })
+          .catch(error => {
+            console.error('Error fetching exchange rates:', error);
+            document.getElementById("result").textContent = 'Error fetching exchange rates.';
+          });
+      }
+    </script>
+
+  </body>
+
+  </html>
